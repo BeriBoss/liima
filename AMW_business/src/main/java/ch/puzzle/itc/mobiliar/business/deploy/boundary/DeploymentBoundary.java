@@ -557,6 +557,21 @@ public class DeploymentBoundary {
         return trackingId;
     }
 
+    /**
+     * Create multiple deployments
+     *
+     * @param selectedDeployments
+     * @param deploymentDate
+     * @param stateToDeploy
+     * @param deployParams
+     * @param contextIds
+     * @param sendEmail
+     * @param requestOnly
+     * @param doSimulate
+     * @param isExecuteShakedownTest
+     * @param isNeighbourhoodTest
+     * @return
+     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public Integer createDeploymentsReturnTrackingId(List<DeploymentEntity> selectedDeployments,
                                                      Date deploymentDate, Date stateToDeploy,
