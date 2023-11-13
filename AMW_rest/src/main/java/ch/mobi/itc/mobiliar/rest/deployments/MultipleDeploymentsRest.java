@@ -7,6 +7,7 @@ import javax.ejb.Stateless;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 @Stateless
 @Path("/multiple-deployments")
@@ -16,6 +17,8 @@ public class MultipleDeploymentsRest {
     @POST
     @ApiOperation(value = "adds multiple deployments")
     public Response addMultipleDeployments(MultipleDeploymentsRequest request) {
-        return null;
+        if (request.getAppServerNames() == null) return Response.status(Status.BAD_REQUEST).build();
+        if (request.getAppServerNames().isEmpty()) return Response.status(Status.BAD_REQUEST).build();
+        return Response.status(Status.CREATED).build();
     }
 }
