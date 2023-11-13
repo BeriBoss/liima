@@ -24,6 +24,7 @@ import ch.mobi.itc.mobiliar.rest.Analyze.TestGenerationRest;
 import ch.mobi.itc.mobiliar.rest.auditview.AuditViewRest;
 import ch.mobi.itc.mobiliar.rest.deployments.DeploymentDtoCsvBodyWriter;
 import ch.mobi.itc.mobiliar.rest.deployments.DeploymentsRest;
+import ch.mobi.itc.mobiliar.rest.deployments.MultipleDeploymentsRest;
 import ch.mobi.itc.mobiliar.rest.environments.EnvironmentsRest;
 import ch.mobi.itc.mobiliar.rest.exceptions.*;
 import ch.mobi.itc.mobiliar.rest.health.HealthCheck;
@@ -81,5 +82,6 @@ public class RESTApplication extends Application {
         resources.add(SettingsRest.class);
         resources.add(TestGenerationRest.class);
         resources.add(ObjectMapperConfig.class);
+        resources.add(MultipleDeploymentsRest.class);
     }
 }
