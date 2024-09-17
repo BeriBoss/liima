@@ -29,7 +29,7 @@ import ch.puzzle.itc.mobiliar.business.environment.entity.ContextEntity;
 
 import ch.puzzle.itc.mobiliar.test.testrunner.PersistenceTestRunner;
 
-import org.hibernate.internal.QueryImpl;
+import org.hibernate.query.internal.QueryImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
