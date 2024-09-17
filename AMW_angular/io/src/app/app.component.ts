@@ -1,10 +1,11 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { SettingService } from './setting/setting.service';
 import { AppConfiguration } from './setting/app-configuration';
 import { AMW_LOGOUT_URL } from './core/amw-constants';
 import { AsyncPipe } from '@angular/common';
 import { NavigationComponent } from './navigation/navigation.component';
+import { ToastContainerComponent } from './shared/elements/toast/toast-container.component';
 
 @Component({
   selector: 'app',
@@ -12,15 +13,14 @@ import { NavigationComponent } from './navigation/navigation.component';
   styleUrls: ['./app.component.scss'],
   templateUrl: './app.component.html',
   standalone: true,
-  imports: [RouterOutlet, AsyncPipe, NavigationComponent],
+  imports: [RouterOutlet, AsyncPipe, NavigationComponent, ToastContainerComponent],
 })
 export class AppComponent implements OnInit {
   logoutUrl: string;
 
   constructor(
-    private router: Router,
-    private settingService: SettingService,
-  ) {}
+    private settingService: SettingService
+  ) { }
 
   ngOnInit(): void {
     this.settingService.getAllAppSettings().subscribe((r) => this.configureSettings(r));

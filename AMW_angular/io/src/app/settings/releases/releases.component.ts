@@ -1,40 +1,39 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { LoadingIndicatorComponent } from '../../shared/elements/loading-indicator.component';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { IconComponent } from '../../shared/icon/icon.component';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
-import { ToastComponent } from 'src/app/shared/elements/toast/toast.component';
 import { DATE_FORMAT } from '../../core/amw-constants';
 import { ReleaseEditComponent } from './release-edit.component';
 import { Release } from './release';
 import { ReleasesService } from './releases.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AuthService } from '../../auth/auth.service';
-import { combineLatest } from 'rxjs';
+import { AuthService, isAllowed } from '../../auth/auth.service';
 import { map, takeUntil } from 'rxjs/operators';
 import { ReleaseDeleteComponent } from './release-delete.component';
+import { ToastService } from '../../shared/elements/toast/toast.service';
 
 @Component({
-  selector: 'amw-releases',
+  selector: 'app-releases',
   standalone: true,
   imports: [
     AsyncPipe,
     DatePipe,
     IconComponent,
     LoadingIndicatorComponent,
-    NgIf,
-    NgFor,
     PaginationComponent,
     ReleaseEditComponent,
     ReleaseDeleteComponent,
-    ToastComponent,
   ],
-  providers: [AuthService],
   templateUrl: './releases.component.html',
 })
 export class ReleasesComponent implements OnInit {
+  private authService = inject(AuthService);
+  private modalService = inject(NgbModal);
+  private releasesService = inject(ReleasesService);
+  private toastService = inject(ToastService);
+
   releases$: Observable<Release[]>;
   defaultRelease$: Observable<Release>;
   count$: Observable<number>;
@@ -46,30 +45,21 @@ export class ReleasesComponent implements OnInit {
   dateFormat = DATE_FORMAT;
 
   // pagination with default values
-  maxResults: number = 10;
-  offset: number = 0;
+  maxResults = 10;
+  offset = 0;
   allResults: number;
   currentPage: number;
   lastPage: number;
 
-  isLoading: boolean = true;
+  isLoading = true;
 
-  canCreate: boolean = false;
-  canEdit: boolean = false;
-  canDelete: boolean = false;
-
-  @ViewChild(ToastComponent) toast: ToastComponent;
-
-  constructor(
-    private authService: AuthService,
-    private http: HttpClient,
-    private modalService: NgbModal,
-    private releasesService: ReleasesService,
-  ) {}
+  canCreate = signal<boolean>(false);
+  canEdit = signal<boolean>(false);
+  canDelete = signal<boolean>(false);
 
   ngOnInit(): void {
     this.error$.pipe(takeUntil(this.destroy$)).subscribe((msg) => {
-      msg != '' ? this.toast.display(msg, 'error', 5000) : null;
+      msg !== '' ? this.toastService.error(msg) : null;
     });
     this.getUserPermissions();
     this.count$ = this.releasesService.getCount();
@@ -82,18 +72,10 @@ export class ReleasesComponent implements OnInit {
   }
 
   private getUserPermissions() {
-    this.authService
-      .getActionsForPermission('RELEASE')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((value) => {
-        if (value.indexOf('ALL') > -1) {
-          this.canDelete = this.canEdit = this.canCreate = true;
-        } else {
-          this.canCreate = value.indexOf('CREATE') > -1;
-          this.canEdit = value.indexOf('UPDATE') > -1;
-          this.canDelete = value.indexOf('DELETE') > -1;
-        }
-      });
+    const actions = this.authService.getActionsForPermission('RELEASE');
+    this.canCreate.set(actions.some(isAllowed('CREATE')));
+    this.canEdit.set(actions.some(isAllowed('UPDATE')));
+    this.canDelete.set(actions.some(isAllowed('DELETE')));
   }
 
   private getReleases() {
@@ -151,7 +133,7 @@ export class ReleasesComponent implements OnInit {
         next: (r) => r,
         error: (e) => this.error$.next(e),
         complete: () => {
-          this.toast.display('Release saved successfully.', 'success');
+          this.toastService.success('Release saved successfully.');
           this.getReleases();
         },
       });
@@ -181,7 +163,7 @@ export class ReleasesComponent implements OnInit {
         next: (r) => r,
         error: (e) => this.error$.next(e),
         complete: () => {
-          this.toast.display('Release deleted.', 'success');
+          this.toastService.success('Release deleted.');
           this.getReleases();
         },
       });
